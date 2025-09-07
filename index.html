@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Code Editor for Processing</title>
+    <meta name="viewport" content="width=900">
+    <meta name="author" content="Michael Wehar">
+    <script src="processing.min.js"></script>
+    <link rel="stylesheet" href="editor/editor.css">
+    <style>
+      body {
+        max-height: 9999999px;
+      }
+      #header-section {
+        padding-top: 20px;
+        text-align: center;
+        font-size: 32px;
+        font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+        color: #6060a0;
+      }
+      #main-section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: row;
+      }
+      #canvas-container {
+        display: block;
+        position: relative;
+        text-align: center;
+        padding: 20px;
+        padding-top: 2px;
+      }
+      #pCanvas1 {
+        margin: 0px;
+        padding: 0px;
+        width: 500px;
+        height: 500px;
+        border: 1px solid #555;
+        border-radius: 5px;
+      }
+      #extra-section {
+        display: block;
+        position: relative;
+        text-align: center;
+        padding: 19px;
+        font-size: 24px;
+        color: #555;
+      }
+      #extra-section a {
+        color: #444488;
+        text-decoration: none;
+      }
+      @media (max-width: 1300px) {
+        #header-section {
+          padding: 20px;
+        }
+        #main-section {
+          flex-direction: column;
+        }
+        #canvas-container {
+          padding-top: 40px;
+        }
+        #extra-section {
+          padding: 25px;
+          padding-bottom: 40px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header-section">
+      <h1>Code Editor for Processing</h1>
+    </div>
+    <div id="main-section">
+      <!-- Code Editor -->
+      <div id="editor1-container"></div>
+      <!-- Canvas -->
+      <div id="canvas-container">
+        <h1>Generated Image</h1>
+        <canvas id="pCanvas1"></canvas>
+      </div>
+    </div>
+    <!-- Extra Section -->
+    <div id="extra-section">
+      <p>* Please see our <a href="https://github.com/MichaelWehar/Web-Based-Code-Editor-For-Processing">GitHub Repository</a> for more information! Thank you. :]</p>
+    </div>
+    <!-- Include Editor -->
+    <script src="editor/editor.js?ver=1"></script>
+    <script>
+      // Declare
+      var pInstance;
+      // Helpers
+      let nullFunction = function() {};
+      function hasBeenSet(obj, attr) {
+        return attr in obj && obj[attr];
+      }
+      function stopCode() {
+        if(pInstance && hasBeenSet(pInstance, "noLoop")) {
+          pInstance.noLoop();
+        }
+      }
+      // Download image
+      function downloadImage() {
+        const pCanvas1 = document.getElementById("pCanvas1");
+        const dUrl = pCanvas1.toDataURL("image/png");
+        const dLink = document.createElement("a");
+        dLink.href = dUrl;
+        dLink.download = "artwork.png";
+        document.body.appendChild(dLink);
+        dLink.click();
+        document.body.removeChild(dLink);
+      }
+      // Settings
+      var mySettings = {
+        "width": 800,
+        "height": 500,
+        "color": "#f2f2f2",
+        "backgroundColor": "#6666aa",
+        "fontFamily": "Monospace",
+        "fontSize": 18,
+        "toolBarBackgroundColor": "#000000",
+        "toolBarTextColor": "#e0e0e0",
+        "toolBarButtonColor": "#222222",
+        "tabLoad": 1,
+        "textWrapLoad": 1,
+        "parensLoad": 1,
+        "hideToolbar": false,
+        "dropdownMode": "custom",
+        "dropdownSettings":[{"id": "menu1", "label": "File", "options": [{"label": "Save", "onclick": "customSaveToTextFileWrapper(this, 'artwork.pde')"}]},
+          {"id": "menu2", "label": "Edit", "options": [{"label": "Editor Settings", "onclick": "showOverlayWrapper(this, 'tabOverlay')"}, {"label": "Find & Replace", "onclick": "showOverlayWrapper(this, 'findOverlay')"}]},
+          {"id": "menu3", "label": "View", "options": [{"label": "Font & Colors", "onclick": "showOverlayWrapper(this, 'colorsOverlay')"}, {"label": "Select Template", "onclick": "showOverlayWrapper(this, 'templatesOverlay')"}]}],
+        "actionButtonMode": "custom",
+        "actionButtonSettings": [{"id": "action1", "label": "Run Code", "onclick": "evaluateActionButtonWrapper(this, (x) => {runCode(x);})"}, {"id": "action2", "label": "Stop", "onclick": "stopCode()"}, {"id": "action3", "label": "Save Image", "onclick": "downloadImage()"}]
+      };
+      // Create editor
+      var eName = "editor1";
+      generate_editor(eName + "-container", eName);
+      customizeEditor(eName, mySettings);
+      type(eName, "// Type your processing code here!\n// Then click \"Run Code\".\n\nsize(500, 500);\nbackground(100, 100, 100);\nrect(100, 100, 300, 300);\nfill(200, 200, 200);\nellipse(180, 200, 50, 50);\nellipse(320, 200, 50, 50);\nline(240, 240, 270, 270);\nline(245, 265, 270, 270);\nrect(150, 295, 25, 25);\nrect(325, 295, 25, 25);\nrect(175, 320, 150, 30);");
+      // Execute new code
+      function runCode(eName) {
+        stopCode();
+        let code = getEditorText(eName);
+        let pCanvas1 = document.getElementById("pCanvas1");
+        pInstance = new Processing(pCanvas1, code);
+        if(!hasBeenSet(pInstance, "setup")) {
+          pInstance.setup = nullFunction;
+        }
+        if(!hasBeenSet(pInstance, "draw")) {
+          pInstance.draw = nullFunction;
+        }
+        pInstance.loop();
+      }
+    </script>
+  </body>
+</html>
